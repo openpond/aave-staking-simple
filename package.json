@@ -1,0 +1,18 @@
+{
+  "name": "ai-oracle-x402-base-sepolia",
+  "version": "1.0.0",
+  "description": "A private Aave staking template with GET-only stake and POST-only unstake tools",
+  "scripts": {
+    "dev": "opentool dev",
+    "build": "opentool build --input tools --output dist",
+    "metadata": "opentool metadata --input tools --output metadata.json",
+    "validate": "opentool validate --input tools"
+  },
+  "dependencies": {
+    "opentool": "^0.7.9"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  }
+}

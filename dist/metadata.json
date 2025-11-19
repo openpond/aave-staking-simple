@@ -1,0 +1,141 @@
+{
+  "metadataSpecVersion": "1.1.0",
+  "name": "ai-oracle-x402-template",
+  "displayName": "AI Oracle MCP X402 Template",
+  "version": "1.0.0",
+  "description": "A template for creating MCP agents with x402 support",
+  "author": "OpenPond",
+  "repository": "https://github.com/openpond/ai-oracle-x402-template",
+  "website": "https://github.com/openpond/ai-oracle-x402-template",
+  "category": "example",
+  "termsOfService": "Please review terms before use.",
+  "payment": {
+    "amountUSDC": 0.001,
+    "description": "Very low cost example tools for learning and testing",
+    "x402": true,
+    "plain402": true,
+    "acceptedMethods": [
+      "x402",
+      "402"
+    ],
+    "acceptedCurrencies": [
+      "USDC"
+    ],
+    "chains": [
+      "base-sepolia"
+    ],
+    "facilitator": "opentool"
+  },
+  "tools": [
+    {
+      "name": "index",
+      "description": "index tool",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
+      "annotations": {
+        "requiresPayment": true
+      },
+      "payment": {
+        "definition": {
+          "amount": "0.001",
+          "currency": {
+            "code": "USDC",
+            "symbol": "USDC",
+            "decimals": 6
+          },
+          "asset": {
+            "symbol": "USDC",
+            "network": "base-sepolia",
+            "address": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+            "decimals": 6
+          },
+          "scheme": "exact",
+          "network": "base-sepolia",
+          "facilitator": {
+            "url": "https://facilitator.x402.rs",
+            "verifyPath": "/verify",
+            "settlePath": "/settle",
+            "apiKeyHeader": "Authorization"
+          },
+          "description": "Premium analytics require payment before access."
+        },
+        "metadata": {
+          "amountUSDC": 0.001,
+          "facilitator": "x402rs",
+          "network": "base-sepolia"
+        }
+      },
+      "chains": [
+        "base-sepolia"
+      ]
+    }
+  ],
+  "discovery": {
+    "keywords": [
+      "example",
+      "demo",
+      "tutorial",
+      "basic",
+      "math"
+    ],
+    "category": "education",
+    "useCases": [
+      "Learning how to build MCP tools with OpenTool",
+      "Template for creating new OpenTool projects",
+      "Demonstrating basic tool functionality",
+      "Testing deployment and registration workflows"
+    ],
+    "capabilities": [
+      "mathematical-operations",
+      "basic-interactions",
+      "educational-examples"
+    ],
+    "requirements": {
+      "authentication": [],
+      "permissions": [],
+      "dependencies": [],
+      "minimumInputs": [
+        "varies by tool"
+      ]
+    },
+    "compatibility": {
+      "platforms": [
+        "web",
+        "mobile",
+        "server",
+        "cli"
+      ],
+      "languages": [
+        "any"
+      ],
+      "frameworks": [
+        "mcp",
+        "opentool"
+      ],
+      "regions": [
+        "global"
+      ]
+    },
+    "pricing": {
+      "model": "pay-per-use",
+      "defaultAmount": 0.001,
+      "description": "Very low cost example tools for learning and testing"
+    }
+  },
+  "promptExamples": [
+    "Calculate the square root of 144",
+    "Add 25 and 37 together",
+    "What's 15 multiplied by 8?",
+    "Help me solve: (10 + 5) * 3"
+  ],
+  "iconPath": "/icons/calculator.svg",
+  "videoPath": "/videos/opentool-demo.mp4",
+  "image": "/icons/calculator.svg",
+  "animation_url": "/videos/opentool-demo.mp4",
+  "chains": [
+    "base-sepolia"
+  ]
+}
