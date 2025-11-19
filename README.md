@@ -1,6 +1,7 @@
 # Aave Staking (Private Tools)
 
 A private OpenTool template that exposes two tools:
+
 - GET-only aave-stake (scheduled default profile)
 - POST-only aave-unstake (one-off with JSON body)
 
@@ -8,16 +9,8 @@ A private OpenTool template that exposes two tools:
 
 1. **Environment**
 
-   Required variables (Turnkey signing; Base Sepolia network):
-
-   - `TURNKEY_SUBORG_ID`
-   - `TURNKEY_API_PUBLIC_KEY`
-   - `TURNKEY_API_PRIVATE_KEY`
-   - `TURNKEY_WALLET_ADDRESS` (delegated signer)
-   - `TURNKEY_API_BASE_URL` (optional; defaults to Turnkey cloud)
-   - `ALCHEMY_API_KEY` (optional) or `RPC_URL` (optional)
-
    Notes:
+
    - Chain is hardcoded to `base-sepolia` in both tools.
    - USDC and Aave Pool addresses are hardcoded for Base Sepolia; no contract envs needed.
    - Fund the Turnkey wallet with Base Sepolia ETH (gas) and USDC.
@@ -54,6 +47,10 @@ A private OpenTool template that exposes two tools:
      curl -i -X POST http://localhost:7000/aave-unstake \
        -H "content-type: application/json" \
        -d '{"amount":"100","token":"USDC"}'
+     ```
 
    Both endpoints return `204 No Content` on success.
-     ```
+
+   ```
+
+   ```
