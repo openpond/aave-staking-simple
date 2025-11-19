@@ -1,25 +1,87 @@
 import { z } from "zod";
+import { wallet } from "opentool/wallet";
+import { parseUnits } from "viem";
 
+// POST-only one-off staking tool mirroring aave-stake.ts behavior
 export const profile = {
-  description: "One-off stake utility that accepts an amount",
+  description: "Stake a user-specified USDC amount to Aave (Base Sepolia)",
 };
 
 export const schema = z.object({
   amount: z
     .string()
     .min(1, "amount is required")
-    .refine((v) => /^\d+(?:\.\d+)?$/.test(v), "amount must be a number string"),
-  // Optional note to label the run
-  note: z.string().optional(),
+    .refine((v) => /^\d+(?:\.\d+)?$/.test(v), "amount must be a decimal string"),
 });
+
+const ERC20_ABI = [
+  {
+    type: "function",
+    name: "approve",
+    stateMutability: "nonpayable",
+    inputs: [
+      { name: "spender", type: "address" },
+      { name: "amount", type: "uint256" },
+    ],
+    outputs: [{ name: "", type: "bool" }],
+  },
+];
+
+const AAVE_POOL_ABI = [
+  {
+    type: "function",
+    name: "supply",
+    stateMutability: "nonpayable",
+    inputs: [
+      { name: "asset", type: "address" },
+      { name: "amount", type: "uint256" },
+      { name: "onBehalfOf", type: "address" },
+      { name: "referralCode", type: "uint16" },
+    ],
+    outputs: [],
+  },
+];
 
 export async function POST(req: Request) {
   const body = await req.json().catch(() => ({}));
-  const { amount, note } = schema.parse(body);
+  const { amount } = schema.parse(body);
 
-  // This simple version does not execute an on-chain stake.
-  // It validates input and returns a structured response that your scheduler/runner can consume.
-  // To implement real staking later, import wallet helpers from 'opentool/wallet' and call the Aave staking contract.
+  // Establish wallet context (same network and envs as aave-stake.ts)
+  const ctx = await wallet({
+    chain: "base-sepolia",
+    apiKey: process.env.ALCHEMY_API_KEY,
+    rpcUrl: process.env.RPC_URL,
+    turnkey: {
+      organizationId: process.env.TURNKEY_SUBORG_ID!,
+      apiPublicKey: process.env.TURNKEY_API_PUBLIC_KEY!,
+      apiPrivateKey: process.env.TURNKEY_API_PRIVATE_KEY!,
+      signWith: process.env.TURNKEY_WALLET_ADDRESS!,
+      apiBaseUrl: process.env.TURNKEY_API_BASE_URL,
+    },
+  });
 
-  return Response.json({ ok: true, action: "stake", amount, note });
+  // Constants (Base Sepolia values from aave-stake.ts)
+  const AAVE_POOL = "0x6Ae43d3271ff6888e7Fc43Fd7321a503ff738951" as `0x${string}`; // Base Sepolia Pool
+  const TOKEN_ADDRESS = "0xba50cd2a20f6da35d788639e581bca8d0b5d4d5f" as `0x${string}`; // Base Sepolia USDC
+  const amountUnits = parseUnits(amount, 6);
+
+  // 1) Approve pool to spend USDC
+  const approveHash = await ctx.walletClient.writeContract({
+    address: TOKEN_ADDRESS,
+    abi: ERC20_ABI as any,
+    functionName: "approve",
+    args: [AAVE_POOL, amountUnits],
+    account: ctx.account,
+  });
+
+  // 2) Supply to Aave Pool
+  const supplyHash = await ctx.walletClient.writeContract({
+    address: AAVE_POOL,
+    abi: AAVE_POOL_ABI as any,
+    functionName: "supply",
+    args: [TOKEN_ADDRESS, amountUnits, ctx.address, 0],
+    account: ctx.account,
+  });
+
+  return Response.json({ ok: true, action: "stake", amount, approveHash, supplyHash });
 }
