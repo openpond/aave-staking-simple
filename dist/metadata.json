@@ -1,0 +1,59 @@
+{
+  "metadataSpecVersion": "1.1.0",
+  "name": "aave-staking",
+  "displayName": "Aave Staking",
+  "version": "1.0.0",
+  "description": "A private Aave staking template with GET-only stake and POST-only unstake tools",
+  "category": "internal",
+  "tools": [
+    {
+      "name": "aave-stake-simple",
+      "description": "aave-stake-simple tool",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "amount": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "amount"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "aave-stake",
+      "description": "aave-stake tool"
+    },
+    {
+      "name": "aave-unstake",
+      "description": "aave-unstake tool",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "amount": {
+            "type": "string"
+          },
+          "token": {
+            "type": "string",
+            "default": "USDC"
+          }
+        },
+        "required": [
+          "amount"
+        ],
+        "additionalProperties": false
+      }
+    }
+  ],
+  "discovery": {
+    "keywords": [
+      "aave",
+      "staking",
+      "opentool"
+    ],
+    "category": "internal-tools"
+  }
+}
