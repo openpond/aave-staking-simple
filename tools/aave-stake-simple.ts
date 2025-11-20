@@ -74,13 +74,30 @@ export async function POST(req: Request) {
     account: ctx.account,
   });
 
-  // 2) Supply to Aave Pool
+  // Wait for approve to be mined to avoid replacement/nonce conflicts
+  await ctx.publicClient.waitForTransactionReceipt({ hash: approveHash });
+
+  // Slightly bump fees to avoid "replacement underpriced" on congested testnets
+  let feeOverrides: { maxFeePerGas?: bigint; maxPriorityFeePerGas?: bigint } = {};
+  try {
+    const fee = await ctx.publicClient.estimateFeesPerGas();
+    if (fee.maxFeePerGas && fee.maxPriorityFeePerGas) {
+      // +20% bump over suggestion
+      feeOverrides = {
+        maxFeePerGas: (fee.maxFeePerGas * 12n) / 10n,
+        maxPriorityFeePerGas: (fee.maxPriorityFeePerGas * 12n) / 10n,
+      };
+    }
+  } catch {}
+
+  // 2) Supply to Aave Pool with fee bump
   const supplyHash = await ctx.walletClient.writeContract({
     address: AAVE_POOL,
     abi: AAVE_POOL_ABI as any,
     functionName: "supply",
     args: [TOKEN_ADDRESS, amountUnits, ctx.address, 0],
     account: ctx.account,
+    ...feeOverrides,
   });
 
   return Response.json({ ok: true, action: "stake", amount, approveHash, supplyHash });
