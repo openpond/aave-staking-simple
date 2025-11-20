@@ -11,7 +11,10 @@ export const schema = z.object({
   amount: z
     .string()
     .min(1, "amount is required")
-    .refine((v) => /^\d+(?:\.\d+)?$/.test(v), "amount must be a decimal string"),
+    .refine(
+      (v) => /^\d+(?:\.\d+)?$/.test(v),
+      "amount must be a decimal string"
+    ),
 });
 
 const ERC20_ABI = [
@@ -61,8 +64,10 @@ export async function POST(req: Request) {
   });
 
   // Constants (Base Sepolia values from aave-stake.ts)
-  const AAVE_POOL = "0x6Ae43d3271ff6888e7Fc43Fd7321a503ff738951" as `0x${string}`; // Base Sepolia Pool
-  const TOKEN_ADDRESS = "0xba50cd2a20f6da35d788639e581bca8d0b5d4d5f" as `0x${string}`; // Base Sepolia USDC
+  const AAVE_POOL =
+    "0x8bab6d1b75f19e9ed9fce8b9bd338844ff79ae27" as `0x${string}`; // Base Sepolia Pool
+  const TOKEN_ADDRESS =
+    "0xba50cd2a20f6da35d788639e581bca8d0b5d4d5f" as `0x${string}`; // Base Sepolia USDC
   const amountUnits = parseUnits(amount, 6);
 
   // 1) Approve pool to spend USDC
@@ -78,7 +83,8 @@ export async function POST(req: Request) {
   await ctx.publicClient.waitForTransactionReceipt({ hash: approveHash });
 
   // Slightly bump fees to avoid "replacement underpriced" on congested testnets
-  let feeOverrides: { maxFeePerGas?: bigint; maxPriorityFeePerGas?: bigint } = {};
+  let feeOverrides: { maxFeePerGas?: bigint; maxPriorityFeePerGas?: bigint } =
+    {};
   try {
     const fee = await ctx.publicClient.estimateFeesPerGas();
     if (fee.maxFeePerGas && fee.maxPriorityFeePerGas) {
@@ -100,5 +106,11 @@ export async function POST(req: Request) {
     ...feeOverrides,
   });
 
-  return Response.json({ ok: true, action: "stake", amount, approveHash, supplyHash });
+  return Response.json({
+    ok: true,
+    action: "stake",
+    amount,
+    approveHash,
+    supplyHash,
+  });
 }
