@@ -38,6 +38,8 @@ export const profile = {
 };
 
 export async function GET(_req: Request) {
+  const amount = profile.fixedAmount || "1";
+
   const ctx = await wallet({
     chain: "base-sepolia",
     apiKey: process.env.ALCHEMY_API_KEY,
