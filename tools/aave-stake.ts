@@ -13,13 +13,6 @@ const ERC20_ABI = [
     ],
     outputs: [{ name: "", type: "bool" }],
   },
-  {
-    type: "function",
-    name: "decimals",
-    stateMutability: "view",
-    inputs: [],
-    outputs: [{ name: "", type: "uint8" }],
-  },
 ];
 
 const AAVE_POOL_ABI = [
@@ -36,12 +29,11 @@ const AAVE_POOL_ABI = [
     outputs: [],
   },
 ];
-
 export const profile = {
-  description: "Stake 100 USDC daily at 12:00 UTC",
-  fixedAmount: "100",
+  description: "Stake 1 USDC every 2 minutes",
+  fixedAmount: "1",
   tokenSymbol: "USDC",
-  schedule: { cron: "0 12 * * *", enabled: true },
+  schedule: { cron: "*/2 * * * *", enabled: true },
   limits: { concurrency: 1, dailyCap: 1 },
 };
 
@@ -59,9 +51,12 @@ export async function GET(_req: Request) {
     },
   });
 
-  const AAVE_POOL = "0x6Ae43d3271ff6888e7Fc43Fd7321a503ff738951" as `0x${string}`; // Base Sepolia Pool
-  const TOKEN_ADDRESS = "0xba50cd2a20f6da35d788639e581bca8d0b5d4d5f" as `0x${string}`; // Base Sepolia USDC
-  const amountUnits = parseUnits(profile.fixedAmount, 6);
+  // Constants (Base Sepolia values from aave-stake.ts)
+  const AAVE_POOL =
+    "0x8bab6d1b75f19e9ed9fce8b9bd338844ff79ae27" as `0x${string}`; // Base Sepolia Pool
+  const TOKEN_ADDRESS =
+    "0xba50cd2a20f6da35d788639e581bca8d0b5d4d5f" as `0x${string}`; // Base Sepolia USDC
+  const amountUnits = parseUnits(amount, 6);
 
   // 1) Approve pool to spend USDC
   const approveHash = await ctx.walletClient.writeContract({
@@ -72,13 +67,31 @@ export async function GET(_req: Request) {
     account: ctx.account,
   });
 
-  // 2) Supply to Aave Pool
+  // Wait for approve to be mined to avoid replacement/nonce conflicts
+  await ctx.publicClient.waitForTransactionReceipt({ hash: approveHash });
+
+  // Slightly bump fees to avoid "replacement underpriced" on congested testnets
+  let feeOverrides: { maxFeePerGas?: bigint; maxPriorityFeePerGas?: bigint } =
+    {};
+  try {
+    const fee = await ctx.publicClient.estimateFeesPerGas();
+    if (fee.maxFeePerGas && fee.maxPriorityFeePerGas) {
+      // +20% bump over suggestion
+      feeOverrides = {
+        maxFeePerGas: (fee.maxFeePerGas * 12n) / 10n,
+        maxPriorityFeePerGas: (fee.maxPriorityFeePerGas * 12n) / 10n,
+      };
+    }
+  } catch {}
+
+  // 2) Supply to Aave Pool with fee bump
   const supplyHash = await ctx.walletClient.writeContract({
     address: AAVE_POOL,
     abi: AAVE_POOL_ABI as any,
     functionName: "supply",
     args: [TOKEN_ADDRESS, amountUnits, ctx.address, 0],
     account: ctx.account,
+    ...feeOverrides,
   });
 
   // No content response (intentionally empty)
