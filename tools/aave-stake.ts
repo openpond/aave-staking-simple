@@ -1,6 +1,7 @@
 // GET-only scheduled staking tool using OpenTool wallet + Aave V3 Pool
 import { wallet } from "opentool/wallet";
 import { parseUnits } from "viem";
+import { store } from "opentool/store";
 
 const ERC20_ABI = [
   {
@@ -94,6 +95,21 @@ export async function GET(_req: Request) {
     args: [TOKEN_ADDRESS, amountUnits, ctx.address, 0],
     account: ctx.account,
     ...feeOverrides,
+  });
+
+  // Record the supply tx in the OpenPond activity store
+  await store({
+    source: "aave-v3", // protocol identifier doubles as source
+    ref: supplyHash,
+    status: "submitted",
+    chainId: ctx.chain.id,
+    walletAddress: ctx.address,
+    action: "stake",
+    notional: amount,
+    metadata: {
+      tool: "aave-stake",
+      approveHash,
+    },
   });
 
   // No content response (intentionally empty)
