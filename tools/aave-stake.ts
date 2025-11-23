@@ -1,7 +1,7 @@
 // GET-only scheduled staking tool using OpenTool wallet + Aave V3 Pool
+import { store } from "opentool/store";
 import { wallet } from "opentool/wallet";
 import { parseUnits } from "viem";
-import { store } from "opentool/store";
 
 const ERC20_ABI = [
   {
