@@ -1,5 +1,5 @@
 {
-  "name": "ai-oracle-x402-base-sepolia",
+  "name": "aave-staking",
   "version": "1.0.0",
   "description": "A private Aave staking template with GET-only stake and POST-only unstake tools",
   "scripts": {
